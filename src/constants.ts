@@ -3,7 +3,7 @@ import {
   Users,
   CalendarDays,
   Thermometer,
-  Truck,
+  // Truck, // usado apenas pelo item 'delivery', ocultado temporariamente abaixo
   Newspaper,
   Bell,
   ShieldCheck,
@@ -50,7 +50,8 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { key: 'birthdays', icon: Cake, label: 'Aniversariantes', shortLabel: 'Aniversários', roles: ['admin', 'operador_camara'], path: '/birthdays' },
   { key: 'slaughter', icon: CalendarDays, label: 'Agendamento de Abate', shortLabel: 'Abate', roles: ['admin', 'operador_camara'], path: '/slaughter' },
   { key: 'coldroom', icon: Thermometer, label: 'Câmara Fria', shortLabel: 'Câmara', roles: ['admin', 'operador_camara'], path: '/coldroom' },
-  { key: 'delivery', icon: Truck, label: 'Entrega & Miúdos', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },
+  // Ocultado em produção temporariamente — reativar quando a área de entregas estiver pronta.
+  // { key: 'delivery', icon: Truck, label: 'Entrega & Miúdos', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },
   { key: 'push', icon: Bell, label: 'Central Push', shortLabel: 'Push', roles: ['admin', 'operador_camara'], path: '/push' },
   { key: 'chamados', icon: MessageSquare, label: 'Central de Chamados', shortLabel: 'Chamados', roles: ['admin', 'operador_camara'], path: '/chamados' },
   { key: 'news', icon: Newspaper, label: 'Notícias & Cotações', shortLabel: 'Notícias', roles: ['admin', 'operador_camara'], path: '/news' },

@@ -17,7 +17,7 @@ import { UsersPage } from './features/users/UsersPage';
 import { BirthdaysPage } from './features/birthdays/BirthdaysPage';
 import { SlaughterPage } from './features/slaughter/SlaughterPage';
 import { ColdRoomPage } from './features/coldroom/ColdRoomPage';
-import { DeliveryPage } from './features/delivery/DeliveryPage';
+// import { DeliveryPage } from './features/delivery/DeliveryPage'; // ocultado temporariamente
 import { PushPage } from './features/push/PushPage';
 import { ChamadosPage } from './features/chamados/ChamadosPage';
 import { NewsPage } from './features/news/NewsPage';
@@ -113,6 +113,7 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Rota ocultada temporariamente junto com o item do menu em constants.ts
               <Route
                 path="/delivery"
                 element={
@@ -123,6 +124,7 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
+              */}
               <Route
                 path="/push"
                 element={
