@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
   Search,
-  UserPlus,
   Download,
   RefreshCw,
   AlertCircle,
@@ -11,18 +10,26 @@ import {
   KeyRound,
   Building2,
   Phone,
-  Calendar,
+  UserCheck,
 } from 'lucide-react';
 import { exportToCSV } from '../../hooks/useExportCSV';
 import { PageHeader, Badge, inputCls, btnPrimary, btnSecondary } from '../../components/ui';
 import { AddUserModal } from '../../components/modals/AddUserModal';
+import { PendingRequestsModal } from '../../components/modals/PendingRequestsModal';
+import { CompanyDetailsModal } from '../../components/modals/CompanyDetailsModal';
 import { useUsersQuery, useToggleUserStatusMutation, useUpdateUserLimitMutation } from '../../hooks/useUsers';
 import type { User } from '../../types';
+
+// Mock temporário — mesma contagem exibida no PendingRequestsModal.
+// Será substituído pela contagem real de profiles com verificado = false.
+const PENDING_REQUESTS_COUNT = 2;
 
 export function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'cooperado' | 'terceiro'>('all');
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [isPendingRequestsOpen, setIsPendingRequestsOpen] = useState(false);
+  const [detailsUser, setDetailsUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
@@ -104,7 +111,7 @@ export function UsersPage() {
             onClick={() =>
               exportToCSV(
                 'cooperados_terceiros',
-                ['ID', 'Nome', 'CPF_CNPJ', 'Tipo', 'Limite_Abate', 'Status', 'Telefone', 'Email', 'Cidade_Estado', 'Data_Cadastro'],
+                ['ID', 'Razao_Social', 'CPF_CNPJ', 'Tipo', 'Limite_Abate_Semanal', 'Status', 'Telefone', 'Email', 'Cidade_Estado', 'Data_Cadastro'],
                 users.map((u) => [u.id, u.name, u.cpfCnpj, u.type, u.slaughterLimit, u.status, u.phone, u.email, u.notes || '', u.createdAt])
               )
             }
@@ -114,10 +121,22 @@ export function UsersPage() {
           </button>
 
           <button
+            onClick={() => setIsPendingRequestsOpen(true)}
+            className="relative flex items-center gap-1.5 text-xs px-4 py-2 rounded font-semibold border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors"
+          >
+            <UserCheck className="w-4 h-4" /> Solicitações Pendentes
+            {PENDING_REQUESTS_COUNT > 0 && (
+              <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-amber-600 text-white text-[10px] font-bold">
+                {PENDING_REQUESTS_COUNT}
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setIsAddUserOpen(true)}
             className={btnPrimary + ' flex items-center gap-1.5 text-xs'}
           >
-            <UserPlus className="w-4 h-4" /> Novo Usuário
+            <Building2 className="w-4 h-4" /> Nova Empresa
           </button>
         </div>
       </div>
@@ -232,11 +251,11 @@ export function UsersPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-2.5 font-medium">Nome / Razão Social</th>
-                  <th className="text-left px-4 py-2.5 font-medium">CNPJ / Login</th>
+                  <th className="text-left px-4 py-2.5 font-medium">Razão Social</th>
+                  <th className="text-left px-4 py-2.5 font-medium">CNPJ</th>
                   <th className="text-left px-4 py-2.5 font-medium">Contato & Local</th>
                   <th className="text-left px-4 py-2.5 font-medium">Tipo</th>
-                  <th className="text-left px-4 py-2.5 font-medium">Limite Abate</th>
+                  <th className="text-left px-4 py-2.5 font-medium">Limite Abate (semana)</th>
                   <th className="text-left px-4 py-2.5 font-medium">Status</th>
                   <th className="text-right px-4 py-2.5 font-medium">Ações</th>
                 </tr>
@@ -249,16 +268,9 @@ export function UsersPage() {
                         <Building2 className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                         <span>{user.name}</span>
                       </div>
-                      {user.birthDate && (
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                          <Calendar className="w-3 h-3 text-amber-500" />
-                          <span>Nascimento: {user.birthDate.split('-').reverse().join('/')}</span>
-                        </div>
-                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-xs font-mono font-semibold text-slate-800">{user.cpfCnpj}</div>
-                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">{user.email}</div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-xs text-slate-700 flex items-center gap-1 font-medium">
@@ -279,8 +291,13 @@ export function UsersPage() {
                         <input
                           type="number"
                           min={0}
+                          max={999}
                           defaultValue={user.slaughterLimit}
                           className="w-16 border border-gray-300 rounded px-2 py-1 text-xs text-center font-bold text-slate-900 focus:outline-none focus:border-[#c51d1f]"
+                          onInput={(e) => {
+                            const target = e.target as HTMLInputElement;
+                            if (target.value.length > 3) target.value = target.value.slice(0, 3);
+                          }}
                           onBlur={(e) =>
                             handleUpdateLimit(user.id, user.slaughterLimit, Number(e.target.value))
                           }
@@ -290,7 +307,7 @@ export function UsersPage() {
                             }
                           }}
                         />
-                        <span className="text-xs text-gray-400">cab/mês</span>
+                        <span className="text-xs text-gray-400">cab/semana</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -301,17 +318,25 @@ export function UsersPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => handleToggleBlock(user)}
-                        disabled={toggleStatusMutation.isPending}
-                        className={`text-xs font-semibold px-2.5 py-1 rounded border transition-colors disabled:opacity-50 ${
-                          user.status === 'blocked'
-                            ? 'border-green-300 text-green-700 hover:bg-green-50'
-                            : 'border-red-300 text-red-700 hover:bg-red-50'
-                        }`}
-                      >
-                        {user.status === 'blocked' ? 'Desbloquear' : 'Bloquear'}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setDetailsUser(user)}
+                          className="text-xs font-semibold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+                        >
+                          Detalhar
+                        </button>
+                        <button
+                          onClick={() => handleToggleBlock(user)}
+                          disabled={toggleStatusMutation.isPending}
+                          className={`text-xs font-semibold px-2.5 py-1 rounded border transition-colors disabled:opacity-50 ${
+                            user.status === 'blocked'
+                              ? 'border-green-300 text-green-700 hover:bg-green-50'
+                              : 'border-red-300 text-red-700 hover:bg-red-50'
+                          }`}
+                        >
+                          {user.status === 'blocked' ? 'Desbloquear' : 'Bloquear'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -357,6 +382,8 @@ export function UsersPage() {
       )}
 
       {isAddUserOpen && <AddUserModal onClose={() => setIsAddUserOpen(false)} />}
+      {isPendingRequestsOpen && <PendingRequestsModal onClose={() => setIsPendingRequestsOpen(false)} />}
+      {detailsUser && <CompanyDetailsModal user={detailsUser} onClose={() => setDetailsUser(null)} />}
     </div>
   );
 }

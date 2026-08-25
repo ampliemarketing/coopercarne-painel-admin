@@ -61,11 +61,35 @@ export function useUpdateUserLimitMutation() {
       userService.updateUserLimit(userId, newLimit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
-      toast.success('Limite mensal de abate atualizado no banco de dados!');
+      toast.success('Limite semanal de abate atualizado no banco de dados!');
     },
     onError: (err: any) => {
       console.error('[useUpdateUserLimitMutation] Erro:', err);
       toast.error(err?.message || 'Falha ao atualizar limite de abate.');
+    },
+  });
+}
+
+export function useUpdateUserDetailsMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userId,
+      estabelecimentoId,
+      data,
+    }: {
+      userId: string;
+      estabelecimentoId?: string;
+      data: { name: string; cpfCnpj: string; phone: string; email: string };
+    }) => userService.updateUserDetails(userId, estabelecimentoId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      toast.success('Dados da empresa atualizados no banco de dados!');
+    },
+    onError: (err: any) => {
+      console.error('[useUpdateUserDetailsMutation] Erro:', err);
+      toast.error(err?.message || 'Falha ao atualizar dados da empresa.');
     },
   });
 }

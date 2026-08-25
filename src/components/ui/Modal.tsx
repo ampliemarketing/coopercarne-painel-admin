@@ -1,10 +1,18 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-export function ModalOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+export function ModalOverlay({
+  children,
+  onClose,
+  maxWidthClass = 'max-w-md',
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+  maxWidthClass?: string;
+}) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50 animate-fadeIn" onClick={onClose}>
-      <div className="bg-white border border-slate-200 rounded-md w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className={`bg-white border border-slate-200 rounded-md w-full ${maxWidthClass} shadow-xl`} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>

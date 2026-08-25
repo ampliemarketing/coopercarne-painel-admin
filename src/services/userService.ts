@@ -98,7 +98,7 @@ export const userService = {
         const limit = limitMap.get(prof.id);
 
         const isTerceiro = prof.perfil === 'terceiro';
-        const displayName = prof.nome || estab?.razao_social || 'Sem Nome';
+        const displayName = estab?.razao_social || prof.nome || 'Sem Nome';
         const displayCpfCnpj = cpf || estab?.cnpj || '000.000.000-00';
         const displayLimit = limit ?? (isTerceiro ? 10 : 20);
 
@@ -114,6 +114,7 @@ export const userService = {
           birthDate: prof.data_nascimento || undefined,
           notes: estab?.cidade ? `${estab.cidade}/${estab.estado}` : undefined,
           createdAt: prof.created_at ? prof.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          estabelecimentoId: estab?.id || prof.estabelecimento_id || undefined,
         };
       });
 
@@ -285,6 +286,50 @@ export const userService = {
       tabela: 'limites_abate',
       registro_id: userId,
       dados_novos: { limite_mensal: newLimit, mes_referencia: currentMonth },
+    });
+  },
+
+  /**
+   * Atualiza os dados cadastrais da empresa (razão social, CNPJ, telefone, e-mail)
+   */
+  async updateUserDetails(
+    userId: string,
+    estabelecimentoId: string | undefined,
+    data: { name: string; cpfCnpj: string; phone: string; email: string }
+  ): Promise<void> {
+    const { error: profError } = await supabase
+      .from('profiles')
+      .update({
+        nome: data.name,
+        telefone: data.phone,
+        email: data.email,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (profError) {
+      console.error('[userService] Erro ao atualizar profile:', profError.message);
+      throw profError;
+    }
+
+    if (estabelecimentoId) {
+      const { error: estabError } = await supabase
+        .from('estabelecimentos')
+        .update({ razao_social: data.name, cnpj: data.cpfCnpj })
+        .eq('id', estabelecimentoId);
+
+      if (estabError) {
+        console.error('[userService] Erro ao atualizar estabelecimento:', estabError.message);
+        throw estabError;
+      }
+    }
+
+    // Auditoria
+    await supabase.from('audit_log').insert({
+      acao: 'ATUALIZAR_DADOS_EMPRESA',
+      tabela: 'profiles',
+      registro_id: userId,
+      dados_novos: data,
     });
   },
 

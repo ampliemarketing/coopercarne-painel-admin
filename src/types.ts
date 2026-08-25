@@ -12,6 +12,7 @@ export interface User {
   birthDate?: string; // Data de Aniversário (YYYY-MM-DD ou DD/MM)
   notes?: string;
   createdAt: string;
+  estabelecimentoId?: string; // Vínculo com o registro em estabelecimentos, quando existir
 }
 
 export interface SlaughterSchedule {

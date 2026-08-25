@@ -22,6 +22,9 @@ dist.zip
 src/data/cooperadosData.json
 supabase_seed_cooperados.sql
 
+# App do usuário (repositório git próprio, aninhado apenas para conveniência de acesso)
+Coopercarne/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
