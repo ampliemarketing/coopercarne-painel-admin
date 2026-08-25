@@ -1,0 +1,34 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+dist.zip
+*.local
+
+# Credenciais reais do Supabase (só .env.example fica versionado)
+.env
+.env.local
+.env.*.local
+
+# Dados pessoais reais dos cooperados (CNPJ, nome, telefone, data de nascimento)
+src/data/cooperadosData.json
+supabase_seed_cooperados.sql
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

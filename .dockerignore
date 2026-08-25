@@ -1,0 +1,17 @@
+node_modules
+dist
+dist-ssr
+dist.zip
+.git
+.gitignore
+
+# Nunca copiar .env para a imagem: as credenciais de build devem vir via
+# --build-arg (Build Args no EasyPanel), não do .env local do desenvolvedor.
+.env
+.env.local
+.env.*.local
+
+# Scripts e SQLs de manutenção do banco não são necessários para o build da SPA
+*.sql
+*.mjs
+supabase
