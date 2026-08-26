@@ -6,6 +6,8 @@ export interface CreateScheduleInput {
   userId: string;
   animalType: 'bovino' | 'suino' | 'cordeiro' | 'leitao';
   quantity: number;
+  machos?: number;
+  femeas?: number;
   scheduledDate: string;
   slaughterDate: string;
   gtaNumber?: string;
@@ -86,6 +88,14 @@ export const scheduleService = {
             observacoes,
             rendimento_medio,
             romaneio_url,
+            status_operacional,
+            quantidade_confirmada,
+            confirmado_em,
+            quantidade_recebida,
+            recebido_em,
+            quantidade_perda,
+            quantidade_processada,
+            finalizado_em,
             created_at,
             updated_at,
             deleted_at,
@@ -140,10 +150,19 @@ export const scheduleService = {
         let gta = 'GTA-Pendente';
         let confirmedQty: number | undefined = undefined;
         let arrivalNotes: string | undefined = undefined;
+        let machos: number | undefined = undefined;
+        let femeas: number | undefined = undefined;
 
         if (obs.includes('GTA:')) {
           const match = obs.match(/GTA:\s*([^\s|;]+)/i);
           if (match && match[1]) gta = match[1];
+        }
+
+        if (obs.includes('MACHOS:') && obs.includes('FEMEAS:')) {
+          const matchMachos = obs.match(/MACHOS:\s*(\d+)/i);
+          const matchFemeas = obs.match(/FEMEAS:\s*(\d+)/i);
+          if (matchMachos && matchMachos[1]) machos = Number(matchMachos[1]);
+          if (matchFemeas && matchFemeas[1]) femeas = Number(matchFemeas[1]);
         }
 
         if (obs.includes('CONF_CURRAL:')) {
@@ -187,6 +206,16 @@ export const scheduleService = {
           userType: isTerceiro ? 'terceiro' : 'cooperado',
           animalType,
           quantity: qty,
+          machos,
+          femeas,
+          statusOperacional: row.status_operacional || 'reservado',
+          quantidadeConfirmada: row.quantidade_confirmada ?? undefined,
+          confirmadoEm: row.confirmado_em ?? undefined,
+          quantidadeRecebida: row.quantidade_recebida ?? undefined,
+          recebidoEm: row.recebido_em ?? undefined,
+          quantidadePerda: row.quantidade_perda ?? undefined,
+          quantidadeProcessada: row.quantidade_processada ?? undefined,
+          finalizadoEm: row.finalizado_em ?? undefined,
           scheduledDate: row.created_at ? row.created_at.split('T')[0] : row.data_abate,
           slaughterDate: row.data_abate,
           arrivalConfirmed: isArrivalConfirmed,
@@ -242,10 +271,13 @@ export const scheduleService = {
       }
     }
 
-    // 3. Monta observações com GTA
+    // 3. Monta observações com GTA e a quebra de sexo (bovino/suíno)
     let obsText = '';
     if (input.gtaNumber) {
       obsText += `GTA: ${input.gtaNumber} `;
+    }
+    if (input.machos !== undefined && input.femeas !== undefined) {
+      obsText += `MACHOS: ${input.machos} FEMEAS: ${input.femeas} `;
     }
     if (input.observacoes) {
       obsText += `OBS: ${input.observacoes}`;
@@ -306,10 +338,13 @@ export const scheduleService = {
       userType: isTerceiro ? 'terceiro' : 'cooperado',
       animalType: input.animalType,
       quantity: input.quantity,
+      machos: input.machos,
+      femeas: input.femeas,
       scheduledDate: input.scheduledDate,
       slaughterDate: input.slaughterDate,
       arrivalConfirmed: false,
       noShowAlert: false,
+      statusOperacional: 'reservado',
       slaughterFee: feePerHead,
       totalFee: feePerHead * input.quantity,
       coldRoomUnits: input.quantity * (COLD_ROOM_RATIOS[input.animalType] || 1.0),
@@ -384,6 +419,121 @@ export const scheduleService = {
         confirmedQty,
         notes,
       },
+    });
+  },
+
+  /**
+   * Confirmação do cooperado/terceiro na véspera do abate (tela "Abates"):
+   * reservado -> confirmado | nao_confirmado.
+   * Se não confirmado, libera a vaga ocupada em capacidade_diaria_abate.
+   */
+  async confirmarPresenca(id: string, confirmado: boolean, quantidadeConfirmada?: number): Promise<void> {
+    const { data: agendamento, error: fetchError } = await supabase
+      .from('agendamentos_abate')
+      .select('tipo_animal, quantidade, data_abate')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const novoStatus = confirmado ? 'confirmado' : 'nao_confirmado';
+
+    const { error } = await supabase
+      .from('agendamentos_abate')
+      .update({
+        status_operacional: novoStatus,
+        quantidade_confirmada: confirmado ? (quantidadeConfirmada ?? agendamento.quantidade) : null,
+        confirmado_em: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    if (!confirmado) {
+      const dailyCapacities = await this.getCapacidadeDiaria(agendamento.data_abate);
+      const capacityRecord = dailyCapacities.find(
+        (c) => c.tipo_animal.toLowerCase() === agendamento.tipo_animal.toLowerCase()
+      );
+      if (capacityRecord) {
+        await supabase
+          .from('capacidade_diaria_abate')
+          .update({
+            ocupado: Math.max(0, (capacityRecord.ocupado || 0) - agendamento.quantidade),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', capacityRecord.id);
+      }
+    }
+
+    await supabase.from('audit_log').insert({
+      acao: confirmado ? 'CONFIRMAR_PRESENCA_ABATE' : 'NAO_CONFIRMAR_PRESENCA_ABATE',
+      tabela: 'agendamentos_abate',
+      registro_id: id,
+      dados_novos: { status_operacional: novoStatus, quantidadeConfirmada },
+    });
+  },
+
+  /**
+   * Admin marca "Recebido" na chegada do caminhão: confirmado -> em_processo.
+   */
+  async marcarRecebido(id: string, quantidadeRecebida: number, recebidoPor?: string): Promise<void> {
+    const { error } = await supabase
+      .from('agendamentos_abate')
+      .update({
+        status_operacional: 'em_processo',
+        quantidade_recebida: quantidadeRecebida,
+        recebido_em: new Date().toISOString(),
+        recebido_por: recebidoPor || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await supabase.from('audit_log').insert({
+      acao: 'MARCAR_RECEBIDO_ABATE',
+      tabela: 'agendamentos_abate',
+      registro_id: id,
+      dados_novos: { status_operacional: 'em_processo', quantidadeRecebida },
+    });
+  },
+
+  /**
+   * Admin finaliza o abate: em_processo -> finalizado.
+   * quantidade_processada = quantidade_recebida - quantidade_perda.
+   */
+  async finalizarAbate(id: string, quantidadePerda: number, finalizadoPor?: string): Promise<void> {
+    const { data: agendamento, error: fetchError } = await supabase
+      .from('agendamentos_abate')
+      .select('quantidade_recebida, quantidade')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const quantidadeBase = agendamento.quantidade_recebida ?? agendamento.quantidade;
+    const quantidadeProcessada = Math.max(0, quantidadeBase - quantidadePerda);
+
+    const { error } = await supabase
+      .from('agendamentos_abate')
+      .update({
+        status_operacional: 'finalizado',
+        quantidade_perda: quantidadePerda,
+        quantidade_processada: quantidadeProcessada,
+        finalizado_em: new Date().toISOString(),
+        finalizado_por: finalizadoPor || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await supabase.from('audit_log').insert({
+      acao: 'FINALIZAR_ABATE',
+      tabela: 'agendamentos_abate',
+      registro_id: id,
+      dados_novos: { status_operacional: 'finalizado', quantidadePerda, quantidadeProcessada },
     });
   },
 };

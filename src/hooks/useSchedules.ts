@@ -105,3 +105,82 @@ export function useConfirmArrivalMutation() {
     },
   });
 }
+
+export function useConfirmarPresencaMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      scheduleId,
+      confirmado,
+      quantidadeConfirmada,
+    }: {
+      scheduleId: string;
+      confirmado: boolean;
+      quantidadeConfirmada?: number;
+      userName?: string;
+    }) => scheduleService.confirmarPresenca(scheduleId, confirmado, quantidadeConfirmada),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: SCHEDULES_QUERY_KEY });
+      if (variables.confirmado) {
+        toast.success(`Presença confirmada para "${variables.userName || variables.scheduleId}".`);
+      } else {
+        toast.warning(`Agendamento de "${variables.userName || variables.scheduleId}" marcado como NÃO CONFIRMADO. Vaga liberada na agenda.`);
+      }
+    },
+    onError: (err: any) => {
+      console.error('[useConfirmarPresencaMutation] Erro:', err);
+      toast.error(err?.message || 'Falha ao confirmar presença.');
+    },
+  });
+}
+
+export function useMarcarRecebidoMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      scheduleId,
+      quantidadeRecebida,
+      recebidoPor,
+    }: {
+      scheduleId: string;
+      quantidadeRecebida: number;
+      recebidoPor?: string;
+      userName?: string;
+    }) => scheduleService.marcarRecebido(scheduleId, quantidadeRecebida, recebidoPor),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: SCHEDULES_QUERY_KEY });
+      toast.success(`Recebimento registrado: ${variables.quantidadeRecebida} cabeças de "${variables.userName || variables.scheduleId}". Em processo.`);
+    },
+    onError: (err: any) => {
+      console.error('[useMarcarRecebidoMutation] Erro:', err);
+      toast.error(err?.message || 'Falha ao marcar recebimento.');
+    },
+  });
+}
+
+export function useFinalizarAbateMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      scheduleId,
+      quantidadePerda,
+      finalizadoPor,
+    }: {
+      scheduleId: string;
+      quantidadePerda: number;
+      finalizadoPor?: string;
+      userName?: string;
+    }) => scheduleService.finalizarAbate(scheduleId, quantidadePerda, finalizadoPor),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: SCHEDULES_QUERY_KEY });
+      toast.success(`Abate de "${variables.userName || variables.scheduleId}" finalizado.`);
+    },
+    onError: (err: any) => {
+      console.error('[useFinalizarAbateMutation] Erro:', err);
+      toast.error(err?.message || 'Falha ao finalizar abate.');
+    },
+  });
+}

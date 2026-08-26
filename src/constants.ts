@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Cake,
   MessageSquare,
+  ClipboardCheck,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════
@@ -48,7 +49,8 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { key: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', shortLabel: 'Início', roles: ['admin', 'operador_camara'], path: '/' },
   { key: 'users', icon: Users, label: 'Cooperados & Terceiros', shortLabel: 'Cooperados', roles: ['admin', 'operador_camara'], path: '/users' },
   { key: 'birthdays', icon: Cake, label: 'Aniversariantes', shortLabel: 'Aniversários', roles: ['admin', 'operador_camara'], path: '/birthdays' },
-  { key: 'slaughter', icon: CalendarDays, label: 'Agendamento de Abate', shortLabel: 'Abate', roles: ['admin', 'operador_camara'], path: '/slaughter' },
+  { key: 'slaughter', icon: CalendarDays, label: 'Agenda de Abate', shortLabel: 'Agenda', roles: ['admin', 'operador_camara'], path: '/slaughter' },
+  { key: 'abates', icon: ClipboardCheck, label: 'Abates', shortLabel: 'Abates', roles: ['admin', 'operador_camara'], path: '/abates' },
   { key: 'coldroom', icon: Thermometer, label: 'Câmara Fria', shortLabel: 'Câmara', roles: ['admin', 'operador_camara'], path: '/coldroom' },
   // Ocultado em produção temporariamente — reativar quando a área de entregas estiver pronta.
   // { key: 'delivery', icon: Truck, label: 'Entrega & Miúdos', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },

@@ -13,11 +13,16 @@ export function AddScheduleModal({ onClose }: { onClose: () => void }) {
     userId: '',
     animalType: 'bovino' as 'bovino' | 'suino' | 'cordeiro' | 'leitao',
     quantity: 5,
+    machos: 3,
+    femeas: 2,
     scheduledDate: new Date().toISOString().split('T')[0],
     slaughterDate: new Date().toISOString().split('T')[0],
     gtaNumber: '',
     observacoes: '',
   });
+
+  // Bovino e suíno exigem a quebra por sexo; cordeiro e leitão mantêm a quantidade única.
+  const requiresSexBreakdown = newSchedule.animalType === 'bovino' || newSchedule.animalType === 'suino';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +37,22 @@ export function AddScheduleModal({ onClose }: { onClose: () => void }) {
       return;
     }
 
+    const quantity = requiresSexBreakdown
+      ? Number(newSchedule.machos) + Number(newSchedule.femeas)
+      : Number(newSchedule.quantity);
+
+    if (requiresSexBreakdown && quantity <= 0) {
+      toast.error('Informe ao menos 1 cabeça entre machos e fêmeas.');
+      return;
+    }
+
     createScheduleMutation.mutate(
       {
         userId: user.id,
         animalType: newSchedule.animalType,
-        quantity: Number(newSchedule.quantity),
+        quantity,
+        machos: requiresSexBreakdown ? Number(newSchedule.machos) : undefined,
+        femeas: requiresSexBreakdown ? Number(newSchedule.femeas) : undefined,
         scheduledDate: newSchedule.scheduledDate,
         slaughterDate: newSchedule.slaughterDate,
         gtaNumber: newSchedule.gtaNumber.trim() || undefined,
@@ -90,21 +106,62 @@ export function AddScheduleModal({ onClose }: { onClose: () => void }) {
               <option value="leitao">Leitão (0.3x)</option>
             </select>
           </div>
-          <div>
-            <FormLabel>Quantidade de Cabeças *</FormLabel>
-            <input
-              type="number"
-              min={1}
-              value={newSchedule.quantity}
-              onChange={(e) =>
-                setNewSchedule({ ...newSchedule, quantity: Number(e.target.value) })
-              }
-              className={inputCls}
-              required
-              disabled={createScheduleMutation.isPending}
-            />
-          </div>
+          {!requiresSexBreakdown && (
+            <div>
+              <FormLabel>Quantidade de Cabeças *</FormLabel>
+              <input
+                type="number"
+                min={1}
+                value={newSchedule.quantity}
+                onChange={(e) =>
+                  setNewSchedule({ ...newSchedule, quantity: Number(e.target.value) })
+                }
+                className={inputCls}
+                required
+                disabled={createScheduleMutation.isPending}
+              />
+            </div>
+          )}
         </div>
+
+        {requiresSexBreakdown && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FormLabel>Machos *</FormLabel>
+              <input
+                type="number"
+                min={0}
+                value={newSchedule.machos}
+                onChange={(e) =>
+                  setNewSchedule({ ...newSchedule, machos: Number(e.target.value) })
+                }
+                className={inputCls}
+                required
+                disabled={createScheduleMutation.isPending}
+              />
+            </div>
+            <div>
+              <FormLabel>Fêmeas *</FormLabel>
+              <input
+                type="number"
+                min={0}
+                value={newSchedule.femeas}
+                onChange={(e) =>
+                  setNewSchedule({ ...newSchedule, femeas: Number(e.target.value) })
+                }
+                className={inputCls}
+                required
+                disabled={createScheduleMutation.isPending}
+              />
+            </div>
+          </div>
+        )}
+
+        {requiresSexBreakdown && (
+          <p className="text-xs text-slate-500 -mt-1.5">
+            Total de cabeças: <strong className="text-slate-800">{Number(newSchedule.machos) + Number(newSchedule.femeas)}</strong>
+          </p>
+        )}
 
         <div>
           <FormLabel>Número da GTA (Guia Sanitária)</FormLabel>

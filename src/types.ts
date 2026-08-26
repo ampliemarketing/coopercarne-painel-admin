@@ -22,6 +22,8 @@ export interface SlaughterSchedule {
   userType: 'cooperado' | 'terceiro';
   animalType: 'bovino' | 'suino' | 'cordeiro' | 'leitao';
   quantity: number;
+  machos?: number; // Quebra por sexo (bovino/suíno)
+  femeas?: number;
   scheduledDate: string; // Data do agendamento
   slaughterDate: string; // Data do abate
   arrivalConfirmed: boolean;
@@ -35,6 +37,17 @@ export interface SlaughterSchedule {
   coldRoomUnits: number; // Espaço na câmara fria (suíno = 1.5 de bovino)
   brandMark?: string; // Marca gráfica do produtor (ex: AB, JV, C, ML)
   status?: 'pendente_aprovacao' | 'aprovado' | 'rejeitado' | 'concluido'; // Status para aprovação de terceiros
+
+  // Fluxo operacional da tela "Abates": reservado -> confirmado/nao_confirmado -> em_processo -> finalizado
+  statusOperacional?: 'reservado' | 'confirmado' | 'nao_confirmado' | 'em_processo' | 'finalizado';
+  quantidadeConfirmada?: number; // Confirmada pelo cooperado na véspera
+  confirmadoEm?: string;
+  quantidadeRecebida?: number; // Confirmada pelo admin na chegada do caminhão
+  recebidoEm?: string;
+  quantidadePerda?: number; // Informada ao finalizar
+  quantidadeProcessada?: number; // recebida - perda
+  finalizadoEm?: string;
+
   gtaNumber?: string; // Número da Guia de Trânsito Animal
   gtaSeries?: string;
   gtaValidUntil?: string;

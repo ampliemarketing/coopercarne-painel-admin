@@ -692,6 +692,9 @@ export function SlaughterPage() {
                       </td>
                       <td className="px-4 py-3 capitalize">
                         <span className="font-semibold text-gray-700">{sch.quantity}x {sch.animalType}</span>
+                        {sch.machos !== undefined && sch.femeas !== undefined && (
+                          <div className="text-[11px] text-gray-500 normal-case">{sch.machos} machos · {sch.femeas} fêmeas</div>
+                        )}
                         <div className="text-xs text-gray-400">Taxa: R$ {sch.totalFee.toFixed(2)}</div>
                       </td>
                       <td className="px-4 py-3">

@@ -141,16 +141,26 @@ export type Database = {
         Row: {
           aprovado_at: string | null
           aprovado_por: string | null
+          confirmado_em: string | null
           created_at: string
           data_abate: string
           deleted_at: string | null
+          finalizado_em: string | null
+          finalizado_por: string | null
           id: string
           observacoes: string | null
           quantidade: number
+          quantidade_confirmada: number | null
+          quantidade_perda: number
+          quantidade_processada: number | null
+          quantidade_recebida: number | null
+          recebido_em: string | null
+          recebido_por: string | null
           rendimento_medio: number | null
           requer_aprovacao: boolean
           romaneio_url: string | null
           status: string
+          status_operacional: string
           tipo_animal: string
           updated_at: string
           user_id: string
@@ -158,16 +168,26 @@ export type Database = {
         Insert: {
           aprovado_at?: string | null
           aprovado_por?: string | null
+          confirmado_em?: string | null
           created_at?: string
           data_abate: string
           deleted_at?: string | null
+          finalizado_em?: string | null
+          finalizado_por?: string | null
           id?: string
           observacoes?: string | null
           quantidade: number
+          quantidade_confirmada?: number | null
+          quantidade_perda?: number
+          quantidade_processada?: number | null
+          quantidade_recebida?: number | null
+          recebido_em?: string | null
+          recebido_por?: string | null
           rendimento_medio?: number | null
           requer_aprovacao?: boolean
           romaneio_url?: string | null
           status?: string
+          status_operacional?: string
           tipo_animal: string
           updated_at?: string
           user_id: string
@@ -175,16 +195,26 @@ export type Database = {
         Update: {
           aprovado_at?: string | null
           aprovado_por?: string | null
+          confirmado_em?: string | null
           created_at?: string
           data_abate?: string
           deleted_at?: string | null
+          finalizado_em?: string | null
+          finalizado_por?: string | null
           id?: string
           observacoes?: string | null
           quantidade?: number
+          quantidade_confirmada?: number | null
+          quantidade_perda?: number
+          quantidade_processada?: number | null
+          quantidade_recebida?: number | null
+          recebido_em?: string | null
+          recebido_por?: string | null
           rendimento_medio?: number | null
           requer_aprovacao?: boolean
           romaneio_url?: string | null
           status?: string
+          status_operacional?: string
           tipo_animal?: string
           updated_at?: string
           user_id?: string

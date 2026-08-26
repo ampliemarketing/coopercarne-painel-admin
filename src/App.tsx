@@ -16,6 +16,7 @@ import { DashboardPage } from './features/dashboard/DashboardPage';
 import { UsersPage } from './features/users/UsersPage';
 import { BirthdaysPage } from './features/birthdays/BirthdaysPage';
 import { SlaughterPage } from './features/slaughter/SlaughterPage';
+import { AbatesPage } from './features/abates/AbatesPage';
 import { ColdRoomPage } from './features/coldroom/ColdRoomPage';
 // import { DeliveryPage } from './features/delivery/DeliveryPage'; // ocultado temporariamente
 import { PushPage } from './features/push/PushPage';
@@ -99,6 +100,16 @@ export function App() {
                   <ProtectedRoute>
                     <AuthenticatedLayout>
                       <SlaughterPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/abates"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <AbatesPage />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }
