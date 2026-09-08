@@ -131,9 +131,9 @@ for (let i = 1; i < lines.length; i++) {
   });
 }
 
-fs.mkdirSync('./src/data', { recursive: true });
+fs.mkdirSync('../../src/data', { recursive: true });
 fs.writeFileSync(
-  './src/data/cooperadosData.json',
+  '../../src/data/cooperadosData.json',
   JSON.stringify(records, null, 2),
   'utf8'
 );
@@ -398,5 +398,5 @@ SELECT count(*) as total_estabelecimentos FROM public.estabelecimentos;
 SELECT count(*) as total_usuarios_auth FROM auth.users WHERE email LIKE '%@email.com';
 `;
 
-fs.writeFileSync('./supabase_seed_cooperados.sql', sql, 'utf8');
+fs.writeFileSync('../sql/supabase_seed_cooperados.sql', sql, 'utf8');
 console.log('Generated ./supabase_seed_cooperados.sql successfully!');

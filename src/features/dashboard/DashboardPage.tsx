@@ -49,7 +49,7 @@ export function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
         <PageHeader
           title="Visão Geral Operacional"
-          description="Indicadores consolidados de abate, câmara fria, chamados, cotações e entregas via Supabase"
+          description="Indicadores consolidados de abate, câmara fria, chamados, cotações e entregas"
         />
         <button
           onClick={() =>
@@ -115,7 +115,7 @@ export function DashboardPage() {
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-sm font-extrabold uppercase tracking-wide text-slate-900 flex items-center gap-2">
-              <Newspaper className="w-4 h-4 text-[#c51d1f]" /> Cotações do Dia & Mercado BI (Supabase)
+              <Newspaper className="w-4 h-4 text-[#c51d1f]" /> Cotações do Dia & Mercado BI
             </h3>
             <p className="text-xs text-slate-500">
               Valores de referência sincronizados com <code>precos_referencia</code> e <code>precos_historico</code>
@@ -167,7 +167,7 @@ export function DashboardPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
-            Capacidade & Ocupação por Espécie (Supabase)
+            Capacidade & Ocupação por Espécie
           </h3>
           <span className="text-[11px] text-slate-500 font-medium">
             Programação real e saldo disponível de cabeças
@@ -200,7 +200,7 @@ export function DashboardPage() {
       {/* AGENDAMENTOS REAIS REGISTRADOS */}
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-          <span className="text-sm font-bold text-gray-700">Agendamentos Recentes (Supabase)</span>
+          <span className="text-sm font-bold text-gray-700">Agendamentos Recentes</span>
           <button
             onClick={() => navigate('/slaughter')}
             className="text-xs text-[#c51d1f] hover:underline flex items-center gap-1 font-semibold"

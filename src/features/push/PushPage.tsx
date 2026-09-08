@@ -28,7 +28,7 @@ export function PushPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
             <Loader2 className="w-8 h-8 animate-spin text-[#c51d1f]" />
-            <span className="text-sm font-medium">Carregando notificações do Supabase...</span>
+            <span className="text-sm font-medium">Carregando notificações...</span>
           </div>
         ) : isError ? (
           <div className="p-8 text-center text-red-600">

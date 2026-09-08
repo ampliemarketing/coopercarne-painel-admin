@@ -46,7 +46,7 @@ export function EditQuoteModal({
       <ModalHeader title={`Atualizar Cotação — ${quoteName}`} onClose={onClose} />
       <form onSubmit={handleSubmit} className="p-5 space-y-4">
         <div>
-          <FormLabel>Preço de Referência no Supabase (R$)</FormLabel>
+          <FormLabel>Preço de Referência (R$)</FormLabel>
           <input
             type="number"
             step="0.01"

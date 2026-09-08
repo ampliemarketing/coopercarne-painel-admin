@@ -6,7 +6,7 @@ import { AuthProvider } from './store/AuthContext';
 import { AppProvider } from './store/AppContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AppHeader } from './components/layout/AppHeader';
-import { BottomNav } from './components/layout/BottomNav';
+import { Sidebar } from './components/layout/Sidebar';
 
 // Auth Page
 import { LoginPage } from './features/auth/LoginPage';
@@ -17,8 +17,10 @@ import { UsersPage } from './features/users/UsersPage';
 import { BirthdaysPage } from './features/birthdays/BirthdaysPage';
 import { SlaughterPage } from './features/slaughter/SlaughterPage';
 import { AbatesPage } from './features/abates/AbatesPage';
+import { RomaneiosPage } from './features/romaneios/RomaneiosPage';
+import { SystemUsersPage } from './features/systemUsers/SystemUsersPage';
 import { ColdRoomPage } from './features/coldroom/ColdRoomPage';
-// import { DeliveryPage } from './features/delivery/DeliveryPage'; // ocultado temporariamente
+import { DeliveryPage } from './features/delivery/DeliveryPage';
 import { PushPage } from './features/push/PushPage';
 import { ChamadosPage } from './features/chamados/ChamadosPage';
 import { NewsPage } from './features/news/NewsPage';
@@ -40,13 +42,15 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
       {/* Header Superior Vermelho com Dados do Perfil Supabase */}
       <AppHeader />
 
-      {/* Conteúdo Principal com Espaço para Navegação Inferior */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 pb-24">
-        {children}
-      </main>
+      <div className="flex flex-1 min-h-0">
+        {/* Menu Lateral Esquerdo, recolhível, com RBAC */}
+        <Sidebar />
 
-      {/* Navegação Flutuante Inferior com Animação e RBAC */}
-      <BottomNav />
+        {/* Conteúdo Principal */}
+        <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-7xl mx-auto">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
@@ -115,6 +119,16 @@ export function App() {
                 }
               />
               <Route
+                path="/romaneios"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <RomaneiosPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/coldroom"
                 element={
                   <ProtectedRoute>
@@ -124,7 +138,6 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Rota ocultada temporariamente junto com o item do menu em constants.ts
               <Route
                 path="/delivery"
                 element={
@@ -135,7 +148,6 @@ export function App() {
                   </ProtectedRoute>
                 }
               />
-              */}
               <Route
                 path="/push"
                 element={
@@ -162,6 +174,16 @@ export function App() {
                   <ProtectedRoute>
                     <AuthenticatedLayout>
                       <NewsPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/usuarios-sistema"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AuthenticatedLayout>
+                      <SystemUsersPage />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }

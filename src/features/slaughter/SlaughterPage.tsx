@@ -335,14 +335,14 @@ export function SlaughterPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
         <PageHeader
           title="Agenda de Abate & Programação Semanal"
-          description="Escala de abate por dia, mês, controle de lotes, validação de GTA e persistência no Supabase"
+          description="Escala de abate por dia, mês, controle de lotes e validação de GTA"
         />
         <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
           <button
             onClick={() => refetch()}
             disabled={isFetching}
             className="p-2 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 transition-colors shadow-sm disabled:opacity-50"
-            title="Sincronizar agendamentos do Supabase"
+            title="Sincronizar agendamentos"
           >
             <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#c51d1f]' : ''}`} />
           </button>
@@ -658,7 +658,7 @@ export function SlaughterPage() {
           <div className="bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm">
             <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                Agendamentos Registrados no Supabase ({schedules.length} registros)
+                Agendamentos Registrados ({schedules.length} registros)
               </span>
               {schedules.filter((s) => s.userType === 'terceiro' && s.status === 'pendente_aprovacao').length > 0 && (
                 <span className="text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded flex items-center gap-1">

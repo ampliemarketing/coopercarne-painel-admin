@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5174,
+    host: true, // expõe na rede local (0.0.0.0), não só em localhost
   },
   build: {
     target: 'esnext',

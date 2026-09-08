@@ -40,7 +40,7 @@ export function AuditPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
         <PageHeader
           title="Logs de Auditoria & Trilha de Segurança"
-          description="Registro cronológico e imutável de todas as modificações operacionais e administrativas no Supabase"
+          description="Registro cronológico e imutável de todas as modificações operacionais e administrativas"
         />
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">

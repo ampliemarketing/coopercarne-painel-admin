@@ -182,7 +182,7 @@ export function LoginPage() {
                   type="text"
                   required
                   autoFocus
-                  placeholder="00.000.000/0001-00 ou admin@coopercarne.com.br"
+                  placeholder="usuario@email.com.br"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={handleEmailBlur}

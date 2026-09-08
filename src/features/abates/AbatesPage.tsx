@@ -72,7 +72,7 @@ export function AbatesPage() {
           onClick={() => refetch()}
           disabled={isFetching}
           className="p-2 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 transition-colors shadow-sm disabled:opacity-50 flex-shrink-0"
-          title="Atualizar lista do Supabase"
+          title="Atualizar lista"
         >
           <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#c51d1f]' : ''}`} />
         </button>
@@ -90,7 +90,7 @@ export function AbatesPage() {
           <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-red-900 mb-1">Erro ao carregar abates</h3>
           <p className="text-xs text-red-700 mb-4 max-w-md mx-auto">
-            {error?.message || 'Ocorreu uma falha na consulta ao banco de dados do Supabase.'}
+            {error?.message || 'Ocorreu uma falha na consulta ao banco de dados.'}
           </p>
           <button
             onClick={() => refetch()}

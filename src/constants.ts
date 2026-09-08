@@ -3,13 +3,15 @@ import {
   Users,
   CalendarDays,
   Thermometer,
-  // Truck, // usado apenas pelo item 'delivery', ocultado temporariamente abaixo
+  Truck,
   Newspaper,
   Bell,
   ShieldCheck,
   Cake,
   MessageSquare,
   ClipboardCheck,
+  UserCog,
+  FileCheck2,
 } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════
@@ -51,12 +53,13 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { key: 'birthdays', icon: Cake, label: 'Aniversariantes', shortLabel: 'Aniversários', roles: ['admin', 'operador_camara'], path: '/birthdays' },
   { key: 'slaughter', icon: CalendarDays, label: 'Agenda de Abate', shortLabel: 'Agenda', roles: ['admin', 'operador_camara'], path: '/slaughter' },
   { key: 'abates', icon: ClipboardCheck, label: 'Abates', shortLabel: 'Abates', roles: ['admin', 'operador_camara'], path: '/abates' },
+  { key: 'romaneios', icon: FileCheck2, label: 'Romaneios', shortLabel: 'Romaneios', roles: ['admin', 'operador_camara'], path: '/romaneios' },
   { key: 'coldroom', icon: Thermometer, label: 'Câmara Fria', shortLabel: 'Câmara', roles: ['admin', 'operador_camara'], path: '/coldroom' },
-  // Ocultado em produção temporariamente — reativar quando a área de entregas estiver pronta.
-  // { key: 'delivery', icon: Truck, label: 'Entrega & Miúdos', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },
+  { key: 'delivery', icon: Truck, label: 'Entrega & Miúdos', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },
   { key: 'push', icon: Bell, label: 'Central Push', shortLabel: 'Push', roles: ['admin', 'operador_camara'], path: '/push' },
   { key: 'chamados', icon: MessageSquare, label: 'Central de Chamados', shortLabel: 'Chamados', roles: ['admin', 'operador_camara'], path: '/chamados' },
   { key: 'news', icon: Newspaper, label: 'Notícias & Cotações', shortLabel: 'Notícias', roles: ['admin', 'operador_camara'], path: '/news' },
+  { key: 'system-users', icon: UserCog, label: 'Usuários do Sistema', shortLabel: 'Usuários', roles: ['admin'], path: '/usuarios-sistema' },
   { key: 'audit', icon: ShieldCheck, label: 'Auditoria & RBAC', shortLabel: 'Auditoria', roles: ['admin'], path: '/audit' },
 ] as const;
 

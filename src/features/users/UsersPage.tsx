@@ -7,7 +7,6 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  KeyRound,
   Building2,
   Phone,
   UserCheck,
@@ -81,7 +80,7 @@ export function UsersPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
         <PageHeader
           title="Cooperados & Terceiros"
-          description="Gestão de cadastro, limitação individual de abate e sincronização em tempo real via Supabase"
+          description="Gestão de cadastro, empresas e cooperados - limitação individual de abate"
         />
         <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
           <div className="relative">
@@ -102,7 +101,7 @@ export function UsersPage() {
             onClick={() => refetch()}
             disabled={isFetching}
             className="p-2 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 transition-colors shadow-sm disabled:opacity-50"
-            title="Atualizar lista do Supabase"
+            title="Atualizar lista"
           >
             <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#c51d1f]' : ''}`} />
           </button>
@@ -141,28 +140,6 @@ export function UsersPage() {
         </div>
       </div>
 
-      {/* Banner Informativo de Acesso e Credenciais */}
-      <div className="mb-5 p-4 rounded-xl bg-slate-900 text-white border border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-red-600/20 text-red-400 border border-red-500/30 flex items-center justify-center flex-shrink-0">
-            <KeyRound className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Padrão de Autenticação dos Cooperados
-            </h4>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Login: <span className="text-white font-mono font-medium">[CNPJ]</span> ou <span className="text-white font-mono font-medium">[cnpj]@email.com</span> • Senha padrão: <span className="text-amber-400 font-mono font-bold">Coopercarne123@</span>
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-[11px] text-slate-400 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 font-medium">
-            Total Carregado: <strong className="text-white">{users.length}</strong> produtores
-          </span>
-        </div>
-      </div>
-
       {/* Loading State com Skeletons */}
       {isLoading ? (
         <div className="bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm p-6 space-y-4 animate-pulse">
@@ -187,7 +164,7 @@ export function UsersPage() {
           <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-red-900 mb-1">Erro ao carregar cooperados e terceiros</h3>
           <p className="text-xs text-red-700 mb-4 max-w-md mx-auto">
-            {error?.message || 'Ocorreu uma falha na consulta ao banco de dados do Supabase.'}
+            {error?.message || 'Ocorreu uma falha na consulta ao banco de dados.'}
           </p>
           <button
             onClick={() => refetch()}
@@ -247,9 +224,9 @@ export function UsersPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[65vh]">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-200">
+              <thead className="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-200 sticky top-0 z-10">
                 <tr>
                   <th className="text-left px-4 py-2.5 font-medium">Razão Social</th>
                   <th className="text-left px-4 py-2.5 font-medium">CNPJ</th>
@@ -379,6 +356,12 @@ export function UsersPage() {
             </div>
           )}
         </div>
+      )}
+
+      {!isLoading && !isError && (
+        <p className="text-center text-xs text-slate-400 mt-4">
+          Total de produtores: <strong className="text-slate-600">{users.length}</strong>
+        </p>
       )}
 
       {isAddUserOpen && <AddUserModal onClose={() => setIsAddUserOpen(false)} />}

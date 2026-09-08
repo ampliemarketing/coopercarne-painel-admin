@@ -68,7 +68,7 @@ export function AddScheduleModal({ onClose }: { onClose: () => void }) {
 
   return (
     <ModalOverlay onClose={onClose}>
-      <ModalHeader title="Novo Agendamento & GTA (Supabase)" onClose={onClose} />
+      <ModalHeader title="Novo Agendamento & GTA" onClose={onClose} />
       <form onSubmit={handleSubmit} className="p-5 space-y-3">
         <div>
           <FormLabel>Cooperado / Terceiro *</FormLabel>

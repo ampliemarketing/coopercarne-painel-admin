@@ -9,7 +9,10 @@ import {
   AlertCircle,
   Truck,
   Loader2,
+  Paperclip,
+  Upload,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { ModalOverlay, ModalHeader, btnSecondary, btnPrimary } from '../ui';
 import { useUpdateOrderStatusMutation } from '../../hooks/useOrders';
 import { useAuth } from '../../store/AuthContext';
@@ -86,6 +89,17 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
   const { user } = useAuth();
   const updateStatusMutation = useUpdateOrderStatusMutation();
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(order.status);
+  const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
+
+  const handleSelecionarArquivo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setArquivoSelecionado(e.target.files?.[0] || null);
+  };
+
+  const handleEnviarAnexo = () => {
+    if (!arquivoSelecionado) return;
+    // Visual apenas — envio real ao Storage ainda será conectado.
+    toast.success(`Anexo "${arquivoSelecionado.name}" pronto para envio (visual — ainda não integrado ao banco).`);
+  };
 
   const currentCfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.enviado;
   const CurrentIcon = currentCfg.icon;
@@ -305,6 +319,46 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
             <p className="text-xs text-amber-900 italic">{order.notes}</p>
           </div>
         )}
+
+        {/* Comprovante / Anexo */}
+        <div className="p-4 bg-white border border-slate-200 rounded-lg space-y-3">
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <Paperclip className="w-3.5 h-3.5 text-[#c51d1f]" />
+            Comprovante / Anexo
+          </h4>
+          <p className="text-[11px] text-slate-500 -mt-1.5">
+            Fica visível para o cooperado no histórico de pedidos do aplicativo.
+          </p>
+
+          {order.receiptUrl && (
+            <a
+              href={order.receiptUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 w-fit"
+            >
+              <FileText className="w-3.5 h-3.5" /> Ver comprovante atual
+            </a>
+          )}
+
+          <label className="flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-slate-300 hover:border-[#c51d1f] rounded-lg py-5 cursor-pointer transition-colors bg-slate-50/50">
+            <Upload className="w-5 h-5 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-600 px-4 text-center">
+              {arquivoSelecionado ? arquivoSelecionado.name : 'Clique para selecionar um arquivo (PDF ou imagem)'}
+            </span>
+            <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleSelecionarArquivo} />
+          </label>
+
+          {arquivoSelecionado && (
+            <button
+              type="button"
+              onClick={handleEnviarAnexo}
+              className={btnPrimary + ' flex items-center gap-1.5 text-xs w-fit'}
+            >
+              <Upload className="w-3.5 h-3.5" /> Enviar Anexo
+            </button>
+          )}
+        </div>
 
         {/* Ações de Rodapé */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">

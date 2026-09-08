@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-const content = fs.readFileSync('./src/types/supabase.ts', 'utf8');
+const content = fs.readFileSync('../../src/types/supabase.ts', 'utf8');
 const tableMatches = content.match(/public:\s*\{\s*Tables:\s*\{([^}]+)\}/s);
 if (tableMatches) {
   console.log('Tables in types:', tableMatches[1]);

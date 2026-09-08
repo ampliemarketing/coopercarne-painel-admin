@@ -44,7 +44,7 @@ export function ColdRoomPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
         <PageHeader
           title="Câmara Fria & Ocupação"
-          description="Monitoramento em tempo real do espaço disponível, capacidade por espécie e balanço de ocupação via Supabase"
+          description="Monitoramento em tempo real do espaço disponível, capacidade por espécie e balanço de ocupação"
         />
         <button
           onClick={() => refetch()}
@@ -109,7 +109,7 @@ export function ColdRoomPage() {
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
               <div>
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
-                  Capacidade & Ocupação Atual por Espécie (Supabase)
+                  Capacidade & Ocupação Atual por Espécie
                 </h3>
                 <p className="text-[11px] text-slate-500">
                   Balanço por lotes agendados e confirmados no curral (Capacidade Máxima: {COLD_ROOM_CAPACITY} un.)

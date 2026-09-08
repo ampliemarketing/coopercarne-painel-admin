@@ -138,7 +138,7 @@ export function BirthdaysPage() {
             onClick={() => refetch()}
             disabled={isFetching}
             className="p-2 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 transition-colors shadow-sm disabled:opacity-50"
-            title="Atualizar lista do Supabase"
+            title="Atualizar lista"
           >
             <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin text-[#c51d1f]' : ''}`} />
           </button>
