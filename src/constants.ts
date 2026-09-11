@@ -55,7 +55,7 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { key: 'abates', icon: ClipboardCheck, label: 'Abates', shortLabel: 'Abates', roles: ['admin', 'operador_camara'], path: '/abates' },
   { key: 'romaneios', icon: FileCheck2, label: 'Romaneios', shortLabel: 'Romaneios', roles: ['admin', 'operador_camara'], path: '/romaneios' },
   { key: 'coldroom', icon: Thermometer, label: 'Câmara Fria', shortLabel: 'Câmara', roles: ['admin', 'operador_camara'], path: '/coldroom' },
-  { key: 'delivery', icon: Truck, label: 'Entrega & Miúdos', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },
+  { key: 'delivery', icon: Truck, label: 'Entrega', shortLabel: 'Entregas', roles: ['admin', 'operador_camara'], path: '/delivery' },
   { key: 'push', icon: Bell, label: 'Central Push', shortLabel: 'Push', roles: ['admin', 'operador_camara'], path: '/push' },
   { key: 'chamados', icon: MessageSquare, label: 'Central de Chamados', shortLabel: 'Chamados', roles: ['admin', 'operador_camara'], path: '/chamados' },
   { key: 'news', icon: Newspaper, label: 'Notícias & Cotações', shortLabel: 'Notícias', roles: ['admin', 'operador_camara'], path: '/news' },
