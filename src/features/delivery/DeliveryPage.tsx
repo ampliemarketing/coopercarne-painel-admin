@@ -3,21 +3,16 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle2,
-  Clock,
   Package,
-  Truck,
   Search,
   Eye,
   ArrowRight,
   Calendar,
 } from 'lucide-react';
-import { useDeliveriesQuery, useUpdateDeliveryMutation } from '../../hooks/useDeliveries';
 import { useOrdersQuery, useUpdateOrderStatusMutation } from '../../hooks/useOrders';
 import { OrderDetailsModal } from '../../components/modals/OrderDetailsModal';
 import { useAuth } from '../../store/AuthContext';
 import type { Order, OrderStatus } from '../../types';
-
-type DeliveryTab = 'orders' | 'slaughter';
 
 const STATUS_FILTERS: { key: string; label: string; status?: OrderStatus }[] = [
   { key: 'todos', label: 'Todos' },
@@ -44,7 +39,6 @@ const ORDER_STATUS_STYLE: Record<
 
 export function DeliveryPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<DeliveryTab>('orders');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('todos');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -59,40 +53,11 @@ export function DeliveryPage() {
     isFetching: isOrdersFetching,
   } = useOrdersQuery();
 
-  const {
-    data: deliveries = [],
-    isLoading: isDeliveriesLoading,
-    isError: isDeliveriesError,
-    error: deliveriesError,
-    refetch: refetchDeliveries,
-    isFetching: isDeliveriesFetching,
-  } = useDeliveriesQuery();
-
   // Mutations
   const updateOrderMutation = useUpdateOrderStatusMutation();
-  const updateDeliveryMutation = useUpdateDeliveryMutation();
 
   const handleRefresh = () => {
-    if (activeTab === 'orders') {
-      refetchOrders();
-    } else {
-      refetchDeliveries();
-    }
-  };
-
-  const handleToggleDeliveryItem = (
-    deliveryId: string,
-    field: 'carcass' | 'heart' | 'liver',
-    currentVal: boolean,
-    userName: string
-  ) => {
-    updateDeliveryMutation.mutate({
-      deliveryId,
-      itemType: field,
-      delivered: !currentVal,
-      adminId: user?.id,
-      userName,
-    });
+    refetchOrders();
   };
 
   const handleStatusAdvance = (order: Order, e: React.MouseEvent) => {
@@ -128,8 +93,6 @@ export function DeliveryPage() {
 
     return matchesSearch && matchesStatus;
   });
-
-  const deliveredSlaughterCount = deliveries.filter((d) => d.carcassDelivered).length;
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '-';
@@ -178,68 +141,28 @@ export function DeliveryPage() {
           </p>
         </div>
 
-        {/* Switcher de Abas Estilo Segmented Control + Botão Atualizar */}
+        {/* Contador de Pedidos + Botão Atualizar */}
         <div className="flex items-center gap-2">
-          <div className="bg-slate-100 p-1 rounded-lg flex items-center gap-1 border border-slate-200">
-            <button
-              onClick={() => setActiveTab('orders')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'orders'
-                  ? 'bg-white text-[#c51d1f] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Package className="w-3.5 h-3.5" />
-              <span>Pedidos Cooperados</span>
-              <span
-                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                  activeTab === 'orders' ? 'bg-[#c51d1f] text-white' : 'bg-slate-200 text-slate-700'
-                }`}
-              >
-                {orders.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('slaughter')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'slaughter'
-                  ? 'bg-white text-[#c51d1f] shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Truck className="w-3.5 h-3.5" />
-              <span>Saída do Frigorífico</span>
-              <span
-                className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                  activeTab === 'slaughter' ? 'bg-[#c51d1f] text-white' : 'bg-slate-200 text-slate-700'
-                }`}
-              >
-                {deliveries.length}
-              </span>
-            </button>
-          </div>
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold bg-slate-100 border border-slate-200 text-slate-700">
+            <Package className="w-3.5 h-3.5" />
+            <span>Pedidos Cooperados</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#c51d1f] text-white">
+              {orders.length}
+            </span>
+          </span>
 
           <button
             onClick={handleRefresh}
-            disabled={isOrdersFetching || isDeliveriesFetching}
+            disabled={isOrdersFetching}
             className="p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors shadow-xs disabled:opacity-50"
             title="Atualizar dados"
           >
-            <RefreshCw
-              className={`w-4 h-4 ${
-                isOrdersFetching || isDeliveriesFetching ? 'animate-spin text-[#c51d1f]' : ''
-              }`}
-            />
+            <RefreshCw className={`w-4 h-4 ${isOrdersFetching ? 'animate-spin text-[#c51d1f]' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* =========================================================================
-          ABA 1: PEDIDOS DE COOPERADOS (CARCAÇAS, QUARTOS E MIÚDOS)
-         ========================================================================= */}
-      {activeTab === 'orders' && (
-        <div className="space-y-4">
+      <div className="space-y-4">
           {/* Barra de Filtros Rápidos (Chips) & Busca Integrada */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs">
             {/* Status Chips com Contadores Integrados */}
@@ -444,143 +367,6 @@ export function DeliveryPage() {
             </div>
           )}
         </div>
-      )}
-
-      {/* =========================================================================
-          ABA 2: SAÍDA DO FRIGORÍFICO (ABATES & CARCAÇAS)
-         ========================================================================= */}
-      {activeTab === 'slaughter' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between bg-white border border-slate-200/80 p-3.5 rounded-xl shadow-xs">
-            <div className="text-xs text-slate-600">
-              <span className="font-bold text-slate-800">Conferência no Frigorífico:</span> Liberação individual de
-              carcaça, coração e fígado com sincronização automática do espaço na câmara fria.
-            </div>
-            <span className="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 px-3 py-1 rounded-lg">
-              Liberados: {deliveredSlaughterCount} / {deliveries.length}
-            </span>
-          </div>
-
-          {isDeliveriesLoading ? (
-            <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-xs space-y-3 animate-pulse">
-              <div className="h-5 bg-slate-200 rounded w-1/4" />
-              <div className="h-32 bg-slate-100 rounded" />
-            </div>
-          ) : isDeliveriesError ? (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-              <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-              <h3 className="text-sm font-bold text-red-900 mb-1">Erro ao carregar abates</h3>
-              <p className="text-xs text-red-700">{deliveriesError?.message}</p>
-            </div>
-          ) : (
-            <div className="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-xs">
-              <table className="w-full text-xs">
-                <thead className="bg-slate-50/80 text-slate-500 uppercase font-bold border-b border-slate-200 text-[11px]">
-                  <tr>
-                    <th className="text-left px-4 py-3">Produtor & Lote</th>
-                    <th className="text-left px-4 py-3">Data Saída</th>
-                    <th className="text-center px-4 py-3">Carcaça</th>
-                    <th className="text-center px-4 py-3">Coração</th>
-                    <th className="text-center px-4 py-3">Fígado</th>
-                    <th className="text-left px-4 py-3">Observações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {deliveries.map((del) => (
-                    <tr key={del.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-4 py-3 font-bold text-slate-800">
-                        <div>{del.userName}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">Lote #{del.id.substring(0, 8)}</div>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-600 font-semibold">{del.deliveryDate}</td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() =>
-                            handleToggleDeliveryItem(del.id, 'carcass', del.carcassDelivered, del.userName)
-                          }
-                          disabled={updateDeliveryMutation.isPending}
-                          className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors inline-flex items-center gap-1 cursor-pointer ${
-                            del.carcassDelivered
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                              : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-emerald-50'
-                          }`}
-                        >
-                          {del.carcassDelivered ? (
-                            <>
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Entregue
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-3 h-3 text-slate-400" /> Pendente
-                            </>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() =>
-                            handleToggleDeliveryItem(del.id, 'heart', del.heartDelivered, del.userName)
-                          }
-                          disabled={updateDeliveryMutation.isPending}
-                          className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors inline-flex items-center gap-1 cursor-pointer ${
-                            del.heartDelivered
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                              : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-emerald-50'
-                          }`}
-                        >
-                          {del.heartDelivered ? (
-                            <>
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Entregue
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-3 h-3 text-slate-400" /> Pendente
-                            </>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() =>
-                            handleToggleDeliveryItem(del.id, 'liver', del.liverDelivered, del.userName)
-                          }
-                          disabled={updateDeliveryMutation.isPending}
-                          className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors inline-flex items-center gap-1 cursor-pointer ${
-                            del.liverDelivered
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                              : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-emerald-50'
-                          }`}
-                        >
-                          {del.liverDelivered ? (
-                            <>
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Entregue
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-3 h-3 text-slate-400" /> Pendente
-                            </>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500 italic">
-                        {del.notes || 'Sem observações'}
-                      </td>
-                    </tr>
-                  ))}
-
-                  {deliveries.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="text-center py-10 text-slate-400 text-xs font-medium">
-                        Nenhum lote de abate liberado para saída no momento.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Modal de Detalhes do Pedido */}
       {selectedOrder && (
