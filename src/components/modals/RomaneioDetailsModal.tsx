@@ -7,15 +7,18 @@ import type { SlaughterSchedule } from '../../types';
 export function RomaneioDetailsModal({
   schedule,
   anexoAtual,
+  observacaoAtual,
   onClose,
   onAnexoEnviado,
 }: {
   schedule: SlaughterSchedule;
   anexoAtual?: string;
+  observacaoAtual?: string;
   onClose: () => void;
-  onAnexoEnviado: (scheduleId: string, nomeArquivo: string) => void;
+  onAnexoEnviado: (scheduleId: string, nomeArquivo: string, observacao?: string) => void;
 }) {
   const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
+  const [observacao, setObservacao] = useState(observacaoAtual ?? '');
 
   const handleSelecionarArquivo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setArquivoSelecionado(e.target.files?.[0] || null);
@@ -24,7 +27,7 @@ export function RomaneioDetailsModal({
   const handleEnviarAnexo = () => {
     if (!arquivoSelecionado) return;
     // Visual apenas — envio real ao Storage ainda será conectado.
-    onAnexoEnviado(schedule.id, arquivoSelecionado.name);
+    onAnexoEnviado(schedule.id, arquivoSelecionado.name, observacao.trim() || undefined);
     toast.success(`Romaneio "${arquivoSelecionado.name}" pronto para envio (visual — ainda não integrado ao banco).`);
     setArquivoSelecionado(null);
   };
@@ -69,7 +72,7 @@ export function RomaneioDetailsModal({
             <p className="font-semibold text-blue-700">{schedule.quantidadeRecebida ?? '-'} cab.</p>
           </div>
           <div>
-            <p className="text-[11px] text-slate-400 uppercase tracking-wide mb-0.5">Perda</p>
+            <p className="text-[11px] text-slate-400 uppercase tracking-wide mb-0.5">Condenação</p>
             <p className="font-semibold text-red-700">{schedule.quantidadePerda ?? 0} cab.</p>
           </div>
           <div>
@@ -94,6 +97,12 @@ export function RomaneioDetailsModal({
             </div>
           )}
 
+          {observacaoAtual && (
+            <p className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+              {observacaoAtual}
+            </p>
+          )}
+
           <label className="flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-slate-300 hover:border-[#c51d1f] rounded-lg py-5 cursor-pointer transition-colors bg-slate-50/50">
             <Upload className="w-5 h-5 text-slate-400" />
             <span className="text-xs font-semibold text-slate-600 px-4 text-center">
@@ -101,6 +110,19 @@ export function RomaneioDetailsModal({
             </span>
             <input type="file" accept=".pdf,image/*" className="hidden" onChange={handleSelecionarArquivo} />
           </label>
+
+          <div>
+            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+              Observação (opcional)
+            </label>
+            <textarea
+              value={observacao}
+              onChange={(e) => setObservacao(e.target.value)}
+              placeholder="Alguma observação sobre esse romaneio/anexo..."
+              rows={2}
+              className="mt-1 w-full text-xs border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#c51d1f]/30 focus:border-[#c51d1f] resize-none"
+            />
+          </div>
 
           {arquivoSelecionado && (
             <button

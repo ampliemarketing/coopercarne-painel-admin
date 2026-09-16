@@ -156,7 +156,7 @@ export function AbatesPage() {
                         {sch.statusOperacional === 'finalizado' && sch.quantidadeProcessada !== undefined && (
                           <div className="text-[11px] text-gray-500 normal-case">
                             Processado: {sch.quantidadeProcessada} cab.
-                            {sch.quantidadePerda ? ` (perda: ${sch.quantidadePerda})` : ''}
+                            {sch.quantidadePerda ? ` (condenação: ${sch.quantidadePerda})` : ''}
                           </div>
                         )}
                       </td>

@@ -45,7 +45,7 @@ export function FinalizarAbateModal({
         </div>
 
         <div>
-          <FormLabel>Perda (cabeças) — opcional</FormLabel>
+          <FormLabel>Condenação (cabeças) — opcional</FormLabel>
           <input
             type="number"
             min={0}
@@ -56,14 +56,14 @@ export function FinalizarAbateModal({
             disabled={finalizarAbateMutation.isPending}
           />
           <p className="text-[11px] text-gray-500 mt-1">
-            Quantidade de animais perdidos no processo, se houver. Deixe 0 se não houve perda.
+            Quantidade de animais condenados no processo, se houver. Deixe 0 se não houve condenação.
           </p>
         </div>
 
         <div className="bg-emerald-50 border border-emerald-200 rounded p-3 text-xs">
           <span className="font-bold text-emerald-800">Quantidade Processada Final:</span>{' '}
           <span className="font-bold text-emerald-900">{quantidadeProcessada} cabeças</span>
-          <p className="text-emerald-700 mt-0.5">Recebido ({quantidadeRecebida}) − Perda ({quantidadePerda})</p>
+          <p className="text-emerald-700 mt-0.5">Recebido ({quantidadeRecebida}) − Condenação ({quantidadePerda})</p>
         </div>
 
         <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">

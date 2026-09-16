@@ -9,9 +9,9 @@ export function RomaneiosPage() {
   const { data: schedules = [], isLoading, isError, error, refetch, isFetching } = useSchedulesQuery();
   const [detailsSchedule, setDetailsSchedule] = useState<SlaughterSchedule | null>(null);
 
-  // Mock temporário de anexos (id do agendamento -> nome do arquivo).
-  // Quando integrar, isso vira uma coluna real (ex: romaneio_url) em agendamentos_abate.
-  const [anexos, setAnexos] = useState<Record<string, string>>({});
+  // Mock temporário de anexos (id do agendamento -> nome do arquivo + observação).
+  // Quando integrar, isso vira colunas reais (ex: romaneio_url, romaneio_observacao) em agendamentos_abate.
+  const [anexos, setAnexos] = useState<Record<string, { nomeArquivo: string; observacao?: string }>>({});
 
   const finalizados = useMemo(
     () =>
@@ -21,8 +21,8 @@ export function RomaneiosPage() {
     [schedules]
   );
 
-  const handleAnexoEnviado = (scheduleId: string, nomeArquivo: string) => {
-    setAnexos((prev) => ({ ...prev, [scheduleId]: nomeArquivo }));
+  const handleAnexoEnviado = (scheduleId: string, nomeArquivo: string, observacao?: string) => {
+    setAnexos((prev) => ({ ...prev, [scheduleId]: { nomeArquivo, observacao } }));
   };
 
   return (
@@ -95,11 +95,11 @@ export function RomaneiosPage() {
                     <td className="px-4 py-3">
                       <span className="font-bold text-emerald-700">{sch.quantidadeProcessada ?? sch.quantity} cab.</span>
                       {!!sch.quantidadePerda && (
-                        <div className="text-[11px] text-red-600">perda: {sch.quantidadePerda}</div>
+                        <div className="text-[11px] text-red-600">condenação: {sch.quantidadePerda}</div>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {anexos[sch.id] ? (
+                      {anexos[sch.id]?.nomeArquivo ? (
                         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">
                           <Paperclip className="w-3 h-3" /> Anexado
                         </span>
@@ -135,7 +135,8 @@ export function RomaneiosPage() {
       {detailsSchedule && (
         <RomaneioDetailsModal
           schedule={detailsSchedule}
-          anexoAtual={anexos[detailsSchedule.id]}
+          anexoAtual={anexos[detailsSchedule.id]?.nomeArquivo}
+          observacaoAtual={anexos[detailsSchedule.id]?.observacao}
           onClose={() => setDetailsSchedule(null)}
           onAnexoEnviado={handleAnexoEnviado}
         />
