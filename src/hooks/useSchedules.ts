@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { supabase } from '../lib/supabase';
 import { scheduleService, type CreateScheduleInput } from '../services/scheduleService';
 import type { SlaughterSchedule } from '../types';
 
@@ -7,12 +9,36 @@ export const SCHEDULES_QUERY_KEY = ['schedules'] as const;
 export const TAXAS_QUERY_KEY = ['taxas_abate'] as const;
 
 export function useSchedulesQuery() {
-  return useQuery<SlaughterSchedule[], Error>({
+  const queryClient = useQueryClient();
+
+  const query = useQuery<SlaughterSchedule[], Error>({
     queryKey: SCHEDULES_QUERY_KEY,
     queryFn: () => scheduleService.getSchedules(),
     staleTime: 1000 * 60 * 2, // 2 minutos
     refetchOnWindowFocus: true,
   });
+
+  // Realtime: qualquer INSERT/UPDATE/DELETE em agendamentos_abate (feito pelo
+  // app do cooperado/terceiro ou por outra sessão do admin) invalida o cache
+  // e dispara um refetch automático aqui, sem precisar de refresh manual.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`agendamentos_abate_sync_${crypto.randomUUID()}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'agendamentos_abate' },
+        () => {
+          queryClient.invalidateQueries({ queryKey: SCHEDULES_QUERY_KEY });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 }
 
 export function useTaxasAbateQuery() {
