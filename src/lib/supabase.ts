@@ -17,7 +17,20 @@ const isPlaceholder = (val?: string) => {
   );
 };
 
-export const isConfigured = !isPlaceholder(rawUrl) && !isPlaceholder(rawAnonKey);
+const supabaseUrl = !isPlaceholder(rawUrl)
+  ? rawUrl!
+  : 'https://placeholder-coopercarne.supabase.co';
+
+const supabaseAnonKey = !isPlaceholder(rawAnonKey)
+  ? rawAnonKey!
+  : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
+
+// Checado em cima de supabaseUrl/supabaseAnonKey (não de rawUrl/rawAnonKey):
+// no build via Docker essas variáveis não existem em build-time (o entrypoint.sh
+// injeta os valores reais depois, via substituição de string em runtime), então
+// checar os valores "raw" ficaria sempre travado em `false` mesmo depois da
+// substituição rodar com sucesso.
+export const isConfigured = !isPlaceholder(supabaseUrl) && !isPlaceholder(supabaseAnonKey);
 
 if (!isConfigured) {
   console.warn(
@@ -26,14 +39,6 @@ if (!isConfigured) {
     'color: #c51d1f; font-weight: bold; font-size: 12px;'
   );
 }
-
-const supabaseUrl = !isPlaceholder(rawUrl)
-  ? rawUrl!
-  : 'https://placeholder-coopercarne.supabase.co';
-
-const supabaseAnonKey = !isPlaceholder(rawAnonKey)
-  ? rawAnonKey!
-  : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
