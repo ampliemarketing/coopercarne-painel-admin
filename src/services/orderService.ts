@@ -1,6 +1,7 @@
 import { supabase, isSupabaseReady } from '../lib/supabase';
 import { INITIAL_ORDERS } from '../mockData';
-import type { Order, OrderItem, OrderStatus } from '../types';
+import type { ColdRoomAnimalType, ColdRoomPartType, Order, OrderItem, OrderStatus } from '../types';
+import { coldRoomService } from './coldRoomService';
 
 // Cache em memória para modificações de status em modo mock/fallback
 let mockOrdersCache: Order[] = [...INITIAL_ORDERS];
@@ -41,7 +42,10 @@ export const orderService = {
           pedido_itens (
             id,
             corte,
-            quantidade_kg
+            quantidade_kg,
+            tipo_animal,
+            tipo_peca,
+            quantidade_pecas
           )
         `)
         .is('deleted_at', null)
@@ -81,9 +85,11 @@ export const orderService = {
             id: item.id,
             category,
             cutName,
-            piecesCount: Number(item.pecas) || 1,
+            piecesCount: Number(item.quantidade_pecas) || 1,
             quantityKg: Number(item.quantidade_kg) || 0,
             notes: item.observacoes || undefined,
+            coldRoomAnimalType: (item.tipo_animal as ColdRoomAnimalType) || undefined,
+            coldRoomPartType: (item.tipo_peca as ColdRoomPartType) || undefined,
           };
         });
 
@@ -118,13 +124,19 @@ export const orderService = {
   },
 
   /**
-   * Atualiza o status de um pedido (ex: enviado -> em_producao -> pronto_retirada -> entregue)
+   * Atualiza o status de um pedido (ex: enviado -> em_producao -> pronto_retirada -> entregue).
+   *
+   * Quando o pedido é marcado como "entregue", dá baixa FEFO no estoque da câmara fria
+   * para cada item classificado (coldRoomAnimalType/coldRoomPartType), descontando sempre
+   * do lote de abate mais próximo do vencimento primeiro. Por isso é necessário passar o
+   * pedido completo (com userId e items) nessa chamada.
    */
   async updateOrderStatus(
     orderId: string,
     newStatus: OrderStatus,
     adminId?: string,
-    userName?: string
+    userName?: string,
+    order?: Order
   ): Promise<void> {
     // Atualiza cache em memória
     mockOrdersCache = mockOrdersCache.map((ord) =>
@@ -173,8 +185,54 @@ export const orderService = {
       } catch {
         // ignora se audit_log não estiver configurado
       }
+
+      // 4. Baixa FEFO na câmara fria (somente na transição para "entregue")
+      if (newStatus === 'entregue' && order) {
+        for (const item of order.items) {
+          if (!item.coldRoomAnimalType || !item.coldRoomPartType || !item.piecesCount) continue;
+          try {
+            await coldRoomService.consumirEstoqueFEFO({
+              userId: order.userId,
+              animalType: item.coldRoomAnimalType,
+              partType: item.coldRoomPartType,
+              quantidade: item.piecesCount,
+              pedidoId: orderId,
+              pedidoItemId: item.id,
+              criadoPor: adminId,
+            });
+          } catch (fefoErr) {
+            console.error('[orderService] Erro ao dar baixa FEFO na câmara fria:', fefoErr);
+          }
+        }
+      }
     } catch (err) {
       console.error('[orderService] Erro ao atualizar status:', err);
+    }
+  },
+
+  /**
+   * Atualiza a classificação de um item do pedido (espécie/parte/peças) usada para
+   * a baixa FEFO no estoque da câmara fria. Chamado a partir da tela de detalhes do
+   * pedido, enquanto o pedido ainda não foi entregue.
+   */
+  async updateOrderItem(
+    itemId: string,
+    data: { animalType?: ColdRoomAnimalType | null; partType?: ColdRoomPartType | null; piecesCount?: number }
+  ): Promise<void> {
+    if (!isSupabaseReady()) return;
+
+    const { error } = await supabase
+      .from('pedido_itens')
+      .update({
+        ...(data.animalType !== undefined ? { tipo_animal: data.animalType } : {}),
+        ...(data.partType !== undefined ? { tipo_peca: data.partType } : {}),
+        ...(data.piecesCount !== undefined ? { quantidade_pecas: data.piecesCount } : {}),
+      })
+      .eq('id', itemId);
+
+    if (error) {
+      console.error('[orderService] Erro ao classificar item do pedido:', error.message);
+      throw error;
     }
   },
 };

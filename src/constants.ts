@@ -29,11 +29,40 @@ export const calculateFee = (userType: 'cooperado' | 'terceiro', animalType: str
   return (fees as Record<string, number>)[animalType] ?? fees.bovino;
 };
 
-// Ratios de ocupação da câmara fria (unidades equivalentes bovinas)
+// Ratios de ocupação da câmara fria (unidades equivalentes bovinas) — usado apenas
+// para o cálculo histórico de "coldRoomUnits" exibido em relatórios de agendamento.
 export const COLD_ROOM_RATIOS = { bovino: 1.0, suino: 1.5, cordeiro: 0.5, leitao: 0.3 } as const;
 
-// Capacidade total da câmara fria em unidades bovinas equivalentes
-export const COLD_ROOM_CAPACITY = 200;
+/**
+ * Peças de carcaça geradas por cabeça abatida, por espécie.
+ * Bovino: a carcaça é dividida em 2 meias-carcaças, cada uma com 1 dianteiro
+ * e 1 traseiro → 2 dianteiros + 2 traseiros por cabeça.
+ * Suíno e Cordeiro: divididos em apenas 1 dianteiro + 1 traseiro por cabeça.
+ * Leitão não é dividido em partes — segue controlado por cabeça (unidade).
+ */
+export const CARCASS_PARTS_PER_HEAD = {
+  bovino: { dianteiro: 2, traseiro: 2 },
+  suino: { dianteiro: 1, traseiro: 1 },
+  cordeiro: { dianteiro: 1, traseiro: 1 },
+} as const;
+
+// Prazo máximo (em dias) que uma peça pode permanecer na câmara fria após o abate,
+// conforme exigência da vigilância sanitária. Usado para calcular a validade de cada lote.
+export const COLD_ROOM_MAX_DIAS_VALIDADE = 6;
+
+/**
+ * Capacidade máxima da câmara fria por tipo de peça/cabeça.
+ * Valores provisórios — ajustar conforme a capacidade real informada pelo usuário.
+ */
+export const COLD_ROOM_PART_CAPACITY = {
+  bovinoDianteiro: 100,
+  bovinoTraseiro: 100,
+  suinoDianteiro: 60,
+  suinoTraseiro: 60,
+  cordeiroDianteiro: 20,
+  cordeiroTraseiro: 20,
+  leitao: 20,
+} as const;
 
 import type { AdminRole } from './types';
 

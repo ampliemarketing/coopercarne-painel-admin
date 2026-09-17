@@ -433,6 +433,81 @@ export type Database = {
           },
         ]
       }
+      camara_fria_movimentos: {
+        Row: {
+          agendamento_id: string
+          created_at: string
+          criado_por: string | null
+          id: string
+          observacao: string | null
+          pedido_id: string | null
+          pedido_item_id: string | null
+          quantidade: number
+          tipo_animal: string
+          tipo_peca: string
+        }
+        Insert: {
+          agendamento_id: string
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          observacao?: string | null
+          pedido_id?: string | null
+          pedido_item_id?: string | null
+          quantidade: number
+          tipo_animal: string
+          tipo_peca: string
+        }
+        Update: {
+          agendamento_id?: string
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          observacao?: string | null
+          pedido_id?: string | null
+          pedido_item_id?: string | null
+          quantidade?: number
+          tipo_animal?: string
+          tipo_peca?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camara_fria_movimentos_agendamento_id_fkey"
+            columns: ["agendamento_id"]
+            isOneToOne: false
+            referencedRelation: "agendamentos_abate"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camara_fria_movimentos_pedido_id_fkey"
+            columns: ["pedido_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camara_fria_movimentos_pedido_item_id_fkey"
+            columns: ["pedido_item_id"]
+            isOneToOne: false
+            referencedRelation: "pedido_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camara_fria_movimentos_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camara_fria_movimentos_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capacidade_diaria_abate: {
         Row: {
           capacidade_total: number
@@ -1275,7 +1350,10 @@ export type Database = {
           pedido_id: string
           preco_unitario: number
           quantidade_kg: number
+          quantidade_pecas: number
           subtotal: number
+          tipo_animal: string | null
+          tipo_peca: string | null
         }
         Insert: {
           corte: string
@@ -1284,7 +1362,10 @@ export type Database = {
           pedido_id: string
           preco_unitario: number
           quantidade_kg: number
+          quantidade_pecas?: number
           subtotal?: number
+          tipo_animal?: string | null
+          tipo_peca?: string | null
         }
         Update: {
           corte?: string
@@ -1293,7 +1374,10 @@ export type Database = {
           pedido_id?: string
           preco_unitario?: number
           quantidade_kg?: number
+          quantidade_pecas?: number
           subtotal?: number
+          tipo_animal?: string | null
+          tipo_peca?: string | null
         }
         Relationships: [
           {

@@ -15,21 +15,22 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader, StatCard, SpeciesDonutCard, Badge, btnSecondary } from '../../components/ui';
 import { EditQuoteModal } from '../../components/modals/EditQuoteModal';
 import { exportToCSV } from '../../hooks/useExportCSV';
-import { COLD_ROOM_CAPACITY } from '../../constants';
 import { useSchedulesQuery } from '../../hooks/useSchedules';
 import { useTicketsQuery } from '../../hooks/useTickets';
 import { useQuotesQuery } from '../../hooks/useCommunication';
-import { useDeliveriesQuery } from '../../hooks/useDeliveries';
+import { useOrdersQuery } from '../../hooks/useOrders';
+import { useCamaraFriaMovimentosQuery } from '../../hooks/useCamaraFriaMovimentos';
 import { coldRoomService } from '../../services/coldRoomService';
 
 export function DashboardPage() {
   const navigate = useNavigate();
 
-  // Carrega agendamentos, chamados, cotações e entregas reais do Supabase
+  // Carrega agendamentos, chamados, cotações, pedidos e movimentações da câmara fria reais do Supabase
   const { data: schedules = [] } = useSchedulesQuery();
   const { data: tickets = [] } = useTicketsQuery();
   const { data: dailyQuotes = [] } = useQuotesQuery();
-  const { data: deliveries = [] } = useDeliveriesQuery();
+  const { data: orders = [] } = useOrdersQuery();
+  const { data: movimentos = [] } = useCamaraFriaMovimentosQuery();
 
   const [editingQuote, setEditingQuote] = useState<{
     id: string;
@@ -38,7 +39,7 @@ export function DashboardPage() {
     variation: number;
   } | null>(null);
 
-  const overview = coldRoomService.calculateOverview(schedules);
+  const overview = coldRoomService.calculateOverview(schedules, movimentos);
   const totalHeads = schedules.reduce((acc, curr) => acc + curr.quantity, 0);
   const pendingThirdParty = schedules.filter(
     (s) => s.userType === 'terceiro' && s.status === 'pendente_aprovacao'
@@ -84,7 +85,7 @@ export function DashboardPage() {
         <StatCard
           label="Câmara Fria"
           value={`${overview.occupancyPercentage}%`}
-          sub={`${overview.totalOccupiedUnits} / ${COLD_ROOM_CAPACITY} un.`}
+          sub={`${overview.totalOccupied} / ${overview.totalCapacity} peças/cab.`}
           icon={Thermometer}
           badge={overview.isOverCapacity ? 'Crítico' : 'Segura'}
         />
@@ -103,9 +104,9 @@ export function DashboardPage() {
           badge="Suporte"
         />
         <StatCard
-          label="Entregas Miúdos"
-          value={`${deliveries.filter((d) => d.carcassDelivered).length} / ${deliveries.length}`}
-          sub="Carcaças liberadas"
+          label="Pedidos Entregues"
+          value={`${orders.filter((o) => o.status === 'entregue').length} / ${orders.length}`}
+          sub="Total de pedidos"
           icon={Truck}
         />
       </div>
@@ -163,36 +164,58 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* SEÇÃO DE GRÁFICOS DONUT POR ESPÉCIE */}
+      {/* SEÇÃO DE GRÁFICOS DONUT POR PEÇA (DIANTEIRO/TRASEIRO) */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
-            Capacidade & Ocupação por Espécie
+            Estoque da Câmara Fria por Peça
           </h3>
           <span className="text-[11px] text-slate-500 font-medium">
-            Programação real e saldo disponível de cabeças
+            Peças geradas nos abates finalizados, ainda não entregues
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <SpeciesDonutCard
-            title="BOVINO"
-            current={overview.bySpecies.bovino.units}
-            capacity={overview.bySpecies.bovino.capacity}
+            title="BOVINO DIANTEIRO"
+            current={overview.bovino.dianteiro.occupied}
+            capacity={overview.bovino.dianteiro.capacity}
+            unit="peças"
           />
           <SpeciesDonutCard
-            title="SUÍNO"
-            current={overview.bySpecies.suino.units}
-            capacity={overview.bySpecies.suino.capacity}
+            title="BOVINO TRASEIRO"
+            current={overview.bovino.traseiro.occupied}
+            capacity={overview.bovino.traseiro.capacity}
+            unit="peças"
           />
           <SpeciesDonutCard
-            title="CORDEIRO"
-            current={overview.bySpecies.cordeiro.units}
-            capacity={overview.bySpecies.cordeiro.capacity}
+            title="SUÍNO DIANTEIRO"
+            current={overview.suino.dianteiro.occupied}
+            capacity={overview.suino.dianteiro.capacity}
+            unit="peças"
+          />
+          <SpeciesDonutCard
+            title="SUÍNO TRASEIRO"
+            current={overview.suino.traseiro.occupied}
+            capacity={overview.suino.traseiro.capacity}
+            unit="peças"
+          />
+          <SpeciesDonutCard
+            title="CORDEIRO DIANTEIRO"
+            current={overview.cordeiro.dianteiro.occupied}
+            capacity={overview.cordeiro.dianteiro.capacity}
+            unit="peças"
+          />
+          <SpeciesDonutCard
+            title="CORDEIRO TRASEIRO"
+            current={overview.cordeiro.traseiro.occupied}
+            capacity={overview.cordeiro.traseiro.capacity}
+            unit="peças"
           />
           <SpeciesDonutCard
             title="LEITÃO"
-            current={overview.bySpecies.leitao.units}
-            capacity={overview.bySpecies.leitao.capacity}
+            current={overview.leitao.unidade.occupied}
+            capacity={overview.leitao.unidade.capacity}
+            unit="cab."
           />
         </div>
       </div>

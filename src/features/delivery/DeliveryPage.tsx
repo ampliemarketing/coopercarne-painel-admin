@@ -78,6 +78,7 @@ export function DeliveryPage() {
       newStatus: nextStatus,
       adminId: user?.id,
       userName: user?.user_metadata?.nome || user?.email || 'Administrador',
+      order,
     });
   };
 

@@ -163,6 +163,12 @@ export const STANDARD_CUT_CATEGORIES = {
   miudos: ['Coração', 'Fígado', 'Língua', 'Rins', 'Bucho / Rúmen'],
 } as const;
 
+// Espécie e parte da carcaça usadas para o desconto FEFO no estoque da câmara fria.
+// coldRoomAnimalType/coldRoomPartType ficam vazios para itens não rastreados por
+// lote (ex: miúdos), que não saem do estoque de dianteiro/traseiro.
+export type ColdRoomAnimalType = 'bovino' | 'suino' | 'cordeiro' | 'leitao';
+export type ColdRoomPartType = 'dianteiro' | 'traseiro' | 'unidade';
+
 export interface OrderItem {
   id: string;
   category: CutCategory; // 'carcaca' | 'quarto' | 'miudos'
@@ -170,6 +176,8 @@ export interface OrderItem {
   piecesCount?: number; // Quantidade de peças/unidades (ex: 2 quartos, 1 carcaça)
   quantityKg: number; // Peso total em kg
   notes?: string; // Especificação (ex: Resfriado, Embalado, Identificação Lote)
+  coldRoomAnimalType?: ColdRoomAnimalType; // Espécie p/ baixa FEFO na câmara fria
+  coldRoomPartType?: ColdRoomPartType; // dianteiro/traseiro/unidade p/ baixa FEFO
 }
 
 export interface Order {

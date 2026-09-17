@@ -14,9 +14,25 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ModalOverlay, ModalHeader, btnSecondary, btnPrimary } from '../ui';
-import { useUpdateOrderStatusMutation } from '../../hooks/useOrders';
+import { useUpdateOrderStatusMutation, useUpdateOrderItemMutation } from '../../hooks/useOrders';
 import { useAuth } from '../../store/AuthContext';
-import type { Order, OrderStatus } from '../../types';
+import type { ColdRoomAnimalType, ColdRoomPartType, Order, OrderStatus } from '../../types';
+
+const COLD_ROOM_PART_OPTIONS: Record<ColdRoomAnimalType, { value: ColdRoomPartType; label: string }[]> = {
+  bovino: [
+    { value: 'dianteiro', label: 'Dianteiro' },
+    { value: 'traseiro', label: 'Traseiro' },
+  ],
+  suino: [
+    { value: 'dianteiro', label: 'Dianteiro' },
+    { value: 'traseiro', label: 'Traseiro' },
+  ],
+  cordeiro: [
+    { value: 'dianteiro', label: 'Dianteiro' },
+    { value: 'traseiro', label: 'Traseiro' },
+  ],
+  leitao: [{ value: 'unidade', label: 'Unidade (cabeça)' }],
+};
 
 interface OrderDetailsModalProps {
   order: Order;
@@ -88,8 +104,27 @@ const STATUS_CONFIG: Record<
 export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
   const { user } = useAuth();
   const updateStatusMutation = useUpdateOrderStatusMutation();
+  const updateItemMutation = useUpdateOrderItemMutation();
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(order.status);
   const [arquivoSelecionado, setArquivoSelecionado] = useState<File | null>(null);
+
+  // Já entregue: a classificação usada na baixa FEFO fica travada para preservar o histórico.
+  const isItemClassificationLocked = order.status === 'entregue';
+
+  const handleAnimalTypeChange = (itemId: string, animalType: string) => {
+    const parsedAnimalType = (animalType || null) as ColdRoomAnimalType | null;
+    // Ao trocar de espécie, a parte anterior pode não ser válida (ex: leitão só tem "unidade").
+    const defaultPart = parsedAnimalType ? COLD_ROOM_PART_OPTIONS[parsedAnimalType][0].value : null;
+    updateItemMutation.mutate({ itemId, animalType: parsedAnimalType, partType: defaultPart });
+  };
+
+  const handlePartTypeChange = (itemId: string, partType: string) => {
+    updateItemMutation.mutate({ itemId, partType: (partType || null) as ColdRoomPartType | null });
+  };
+
+  const handlePiecesCountChange = (itemId: string, piecesCount: number) => {
+    updateItemMutation.mutate({ itemId, piecesCount });
+  };
 
   const handleSelecionarArquivo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setArquivoSelecionado(e.target.files?.[0] || null);
@@ -111,6 +146,7 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
       newStatus,
       adminId: user?.id,
       userName: user?.user_metadata?.nome || user?.email || 'Administrador',
+      order,
     });
   };
 
@@ -242,6 +278,7 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
                 <tr>
                   <th className="px-4 py-2.5">Tipo / Categoria</th>
                   <th className="px-4 py-2.5">Item / Discriminação</th>
+                  <th className="px-4 py-2.5 text-center">Baixa Câmara Fria (FEFO)</th>
                   <th className="px-4 py-2.5 text-center">Peças / Qtd</th>
                   <th className="px-4 py-2.5 text-center">Peso Total (kg)</th>
                   <th className="px-4 py-2.5 text-left">Especificações</th>
@@ -263,6 +300,8 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
                       ? 'Quarto'
                       : 'Miúdos';
 
+                  const partOptions = item.coldRoomAnimalType ? COLD_ROOM_PART_OPTIONS[item.coldRoomAnimalType] : [];
+
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/60">
                       <td className="px-4 py-2.5">
@@ -271,8 +310,56 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
                         </span>
                       </td>
                       <td className="px-4 py-2.5 font-bold text-slate-800">{item.cutName}</td>
+                      <td className="px-4 py-2.5">
+                        {isItemClassificationLocked ? (
+                          <span className="text-slate-600">
+                            {item.coldRoomAnimalType
+                              ? `${item.coldRoomAnimalType} · ${item.coldRoomPartType}`
+                              : 'Não rastreado (miúdos)'}
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-1 justify-center">
+                            <select
+                              value={item.coldRoomAnimalType || ''}
+                              onChange={(e) => handleAnimalTypeChange(item.id, e.target.value)}
+                              className="text-[11px] font-semibold px-1.5 py-1 rounded bg-white border border-slate-300 focus:ring-2 focus:ring-[#c51d1f] focus:outline-hidden"
+                              title="Espécie para baixa na câmara fria"
+                            >
+                              <option value="">Não rastrear</option>
+                              <option value="bovino">Bovino</option>
+                              <option value="suino">Suíno</option>
+                              <option value="cordeiro">Cordeiro</option>
+                              <option value="leitao">Leitão</option>
+                            </select>
+                            <select
+                              value={item.coldRoomPartType || ''}
+                              onChange={(e) => handlePartTypeChange(item.id, e.target.value)}
+                              disabled={!item.coldRoomAnimalType}
+                              className="text-[11px] font-semibold px-1.5 py-1 rounded bg-white border border-slate-300 focus:ring-2 focus:ring-[#c51d1f] focus:outline-hidden disabled:opacity-40"
+                              title="Parte para baixa na câmara fria"
+                            >
+                              {partOptions.length === 0 && <option value="">—</option>}
+                              {partOptions.map((p) => (
+                                <option key={p.value} value={p.value}>
+                                  {p.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-4 py-2.5 text-center font-mono font-bold text-slate-700">
-                        {item.piecesCount || 1} un
+                        {isItemClassificationLocked ? (
+                          `${item.piecesCount || 1} un`
+                        ) : (
+                          <input
+                            type="number"
+                            min={1}
+                            value={item.piecesCount || 1}
+                            onChange={(e) => handlePiecesCountChange(item.id, Math.max(1, Number(e.target.value) || 1))}
+                            className="w-14 text-center font-mono font-bold px-1.5 py-1 rounded bg-white border border-slate-300 focus:ring-2 focus:ring-[#c51d1f] focus:outline-hidden"
+                          />
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-center font-mono font-black text-slate-900">
                         {item.quantityKg.toFixed(2)} kg
@@ -286,7 +373,7 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
 
                 {order.items.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
+                    <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
                       Nenhum item discriminado no pedido.
                     </td>
                   </tr>
@@ -294,7 +381,7 @@ export function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
               </tbody>
               <tfoot className="bg-slate-50 font-bold border-t border-slate-200">
                 <tr>
-                  <td colSpan={3} className="px-4 py-3 text-right text-slate-700 uppercase tracking-wide">
+                  <td colSpan={4} className="px-4 py-3 text-right text-slate-700 uppercase tracking-wide">
                     Total Geral Estimado:
                   </td>
                   <td className="px-4 py-3 text-center text-base text-[#c51d1f] font-black font-mono">

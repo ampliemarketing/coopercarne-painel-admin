@@ -36,7 +36,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+function AuthenticatedLayout({ children, fullWidth = false }: { children: React.ReactNode; fullWidth?: boolean }) {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans">
       {/* Header Superior Vermelho com Dados do Perfil Supabase */}
@@ -48,7 +48,7 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
 
         {/* Conteúdo Principal */}
         <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6">
-          <div className="max-w-7xl mx-auto">{children}</div>
+          <div className={fullWidth ? 'w-full' : 'max-w-7xl mx-auto'}>{children}</div>
         </main>
       </div>
     </div>
@@ -132,7 +132,7 @@ export function App() {
                 path="/coldroom"
                 element={
                   <ProtectedRoute>
-                    <AuthenticatedLayout>
+                    <AuthenticatedLayout fullWidth>
                       <ColdRoomPage />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
